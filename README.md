@@ -1,0 +1,2 @@
+# WaveCymatix
+Media Visualizer with support for projectM visualizations
