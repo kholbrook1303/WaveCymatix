@@ -6,4 +6,4 @@ With the release of the upcoming projectM 4.2 release you will be able to add sp
 
 WaveCymatix is already setup to leverage these features (You can compile the latest code to test).  Once it has been released I will update the base package in the installer.
 
-### Coming Soon!
+### Initial release targeted for mid-November 2026
