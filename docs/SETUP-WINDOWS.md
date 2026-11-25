@@ -16,14 +16,16 @@ WaveCymatix on Windows the core rendering/audio-capture/UI pipeline is fully sup
 The script itself installs/updates Git, CMake, Python 3.12, and FFmpeg via `winget`, so you do not need to install those manually.
 
 Download and extract the source archive from the
-[latest GitHub release](https://github.com/kholbrook1303/WaveCymatix/releases/latest).
+[GitHub releases page](https://github.com/kholbrook1303/WaveCymatix/releases).
 In an elevated PowerShell session, change to the extracted directory before
 running the examples. The complete archive is required; the script cannot run
 by itself. For updates, download the latest archive again to get the latest
 installer.
 
-The default source is the latest stable GitHub release. If no stable release
-exists yet, use a complete checkout with `-LocalInstall` instead.
+The default source is the latest stable GitHub release. If none exists, the
+installer warns and selects the most recently published prerelease instead.
+Once a stable release exists, use `-Ref <tag>` to select a prerelease. If no
+release has been published, use a complete checkout with `-LocalInstall`.
 
 ### What it does
 `install-windows.ps1`:
@@ -45,7 +47,7 @@ install-windows.ps1 [-Mode <install|update|uninstall>] [-Profile <minimal|optimi
 | `-Profile` | `minimal` or `optimized` performance profile. Defaults to `optimized` for a fresh config. |
 | `-OutputDir` (`-o`) | Install location. Defaults to `%ProgramData%\WaveCymatix`. |
 | `-LocalInstall` (`-l`) / `-Source` (`-s`) | Use a local repository checkout instead of cloning from GitHub (useful for development). |
-| `-Ref` | Application tag, branch, commit, or `latest` (the default stable release). |
+| `-Ref` | Application tag, branch, commit, or `latest` (stable preferred; prerelease fallback). |
 | `-AssetsRef` | Visual-assets ref; defaults to `main`. |
 | `-Plugins` (`-p`) | Comma-separated plugin list. `vlc` installs the latest VLC media player via `winget` and sets `vlc = true` in `settings.toml`. Any other Linux-only plugin name is accepted for CLI parity but ignored with a warning. |
 | `-Autostart` / `-NoAutostart` | Enable or disable the user's Startup shortcut. |
@@ -66,7 +68,7 @@ install-windows.ps1 [-Mode <install|update|uninstall>] [-Profile <minimal|optimi
 .\bin\install-windows.ps1 -Mode update -LocalInstall
 ```
 
-#### Example: update to the latest stable release
+#### Example: update to the default release
 ```powershell
 .\bin\install-windows.ps1 -Mode update
 ```

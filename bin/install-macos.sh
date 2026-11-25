@@ -128,7 +128,8 @@ Options:
                             (including Xcode tools) may still appear.
     --dry-run               Print the planned operation without changing files.
     --verbose               Show detailed, timestamped installer logs on the console.
-    --ref <ref|latest>      WaveCymatix source ref (default: latest stable release).
+    --ref <ref|latest>      Source ref (default: latest stable release, or
+                            latest published prerelease if no stable release exists).
     --projectm-ref <ref>    Select a projectM tag, branch, or commit. When
                             omitted, updates retain the installed source ref.
     --assets-ref <ref>      Visual-assets ref (default: main).

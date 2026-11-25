@@ -1,5 +1,6 @@
 import base64
 import hashlib
+import io
 import json
 import os
 import re
@@ -7,6 +8,8 @@ import stat
 import sys
 import tempfile
 import unittest
+import urllib.error
+from contextlib import redirect_stderr
 from pathlib import Path
 from unittest import mock
 
@@ -1731,6 +1734,71 @@ class InstallerCoreTests(unittest.TestCase):
             urlopen.call_args.args[0].full_url,
             "https://api.github.com/repos/owner/project/releases/latest",
         )
+        self.assertEqual(urlopen.call_count, 1)
+
+    def test_latest_falls_back_to_newest_published_prerelease_across_pages(self):
+        repository = "https://github.com/owner/project.git"
+        no_stable = urllib.error.HTTPError("url", 404, "Not Found", {}, None)
+        releases = [
+            {"draft": True, "prerelease": True, "tag_name": "draft", "published_at": None}
+            for _ in range(99)
+        ]
+        releases.append({
+            "draft": False, "prerelease": True, "tag_name": "v1.0.0rc1",
+            "published_at": "2026-01-01T00:00:00Z",
+        })
+        later = [{
+            "draft": False, "prerelease": True, "tag_name": "v1.0.0rc2",
+            "published_at": "2026-02-01T00:00:00Z",
+        }]
+        warnings = io.StringIO()
+        with (
+            mock.patch.object(
+                installer_core.urllib.request, "urlopen",
+                side_effect=[
+                    no_stable,
+                    io.BytesIO(json.dumps(releases).encode()),
+                    io.BytesIO(json.dumps(later).encode()),
+                ],
+            ) as urlopen,
+            redirect_stderr(warnings),
+        ):
+            tag = installer_core.resolve_latest_release(repository)
+
+        self.assertEqual(tag, "v1.0.0rc2")
+        self.assertIn("prerelease", warnings.getvalue().lower())
+        self.assertIn("v1.0.0rc2", warnings.getvalue())
+        self.assertIn("page=2", urlopen.call_args.args[0].full_url)
+
+    def test_latest_reports_when_no_published_release_exists(self):
+        no_stable = urllib.error.HTTPError("url", 404, "Not Found", {}, None)
+        with mock.patch.object(
+            installer_core.urllib.request, "urlopen",
+            side_effect=[
+                no_stable,
+                io.BytesIO(b'[{"draft":true,"prerelease":true,"tag_name":"draft"}]'),
+            ],
+        ):
+            with self.assertRaisesRegex(RuntimeError, "No published.*release"):
+                installer_core.resolve_latest_release("https://github.com/owner/project.git")
+
+    def test_latest_does_not_fall_back_on_rate_limit(self):
+        forbidden = urllib.error.HTTPError("url", 403, "Forbidden", {}, None)
+        with mock.patch.object(
+            installer_core.urllib.request, "urlopen", side_effect=forbidden
+        ) as urlopen:
+            with self.assertRaisesRegex(RuntimeError, "403"):
+                installer_core.resolve_latest_release("https://github.com/owner/project.git")
+            self.assertEqual(urlopen.call_count, 1)
+
+    def test_latest_reports_failure_to_list_releases(self):
+        no_stable = urllib.error.HTTPError("url", 404, "Not Found", {}, None)
+        no_repository = urllib.error.HTTPError("url", 404, "Not Found", {}, None)
+        with mock.patch.object(
+            installer_core.urllib.request, "urlopen", side_effect=[no_stable, no_repository]
+        ):
+            with self.assertRaisesRegex(RuntimeError, "Could not resolve a prerelease.*404"):
+                installer_core.resolve_latest_release("https://github.com/owner/project.git")
 
     def test_default_checkout_resolves_release_but_explicit_ref_is_preserved(self):
         config = (Path(__file__).parents[1] / "bin" / "installer.env").read_text(

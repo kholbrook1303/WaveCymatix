@@ -14,13 +14,15 @@ WaveCymatix on macOS the core rendering/audio-capture/UI pipeline is supported, 
 The script installs/updates Git, CMake, Python 3.12, and FFmpeg through the selected package manager. On Intel Macs running macOS Tahoe, automatic selection prefers MacPorts when it is installed. Homebrew remains the default when available on other systems; use `--package-manager` to select explicitly.
 
 Download and extract the source archive from the
-[latest GitHub release](https://github.com/kholbrook1303/WaveCymatix/releases/latest),
+[GitHub releases page](https://github.com/kholbrook1303/WaveCymatix/releases),
 then open a terminal in the extracted directory. The complete archive is
 required; the script cannot run by itself. For updates, download the latest
 archive again to get the latest installer.
 
-The default source is the latest stable GitHub release. If no stable release
-exists yet, use a complete checkout with `--local-install` instead.
+The default source is the latest stable GitHub release. If none exists, the
+installer warns and selects the most recently published prerelease instead.
+Once a stable release exists, use `--ref <tag>` to select a prerelease. If no
+release has been published, use a complete checkout with `--local-install`.
 
 ### What it does
 `install-macos.sh`:
@@ -43,7 +45,7 @@ install-macos.sh [-m <install|update|uninstall>] [-P <minimal|optimized>] [-p <v
 | `-P`, `--profile` | `minimal` or `optimized` performance profile. Defaults to `optimized` for a fresh config. |
 | `-o`, `--output-dir` | Install location. Defaults to `$HOME/WaveCymatix`. |
 | `-l`, `--local-install` / `-s`, `--source` | Use a local repository checkout instead of cloning from GitHub (useful for development). |
-| `--ref` | Application tag, branch, commit, or `latest` (the default stable release). |
+| `--ref` | Application tag, branch, commit, or `latest` (stable preferred; prerelease fallback). |
 | `--assets-ref` | Visual-assets ref; defaults to `main`. |
 | `-p`, `--plugins` | Comma-separated plugin list. `vlc` installs/updates VLC through the selected package manager (Homebrew cask or MacPorts port) and sets `vlc = true` in `settings.toml`. Other Linux-only plugin names are accepted for CLI parity but ignored with a warning. |
 | `--package-manager` | `auto` (default), `brew`, or `macports`. Auto prefers MacPorts on Intel Tahoe when available, otherwise selects an installed manager. |
@@ -69,7 +71,7 @@ bash bin/install-macos.sh -m install --profile optimized -p vlc
 bash bin/install-macos.sh -m install --profile optimized --package-manager macports -p vlc
 ```
 
-#### Example: update to the latest stable release
+#### Example: update to the default release
 ```bash
 bash bin/install-macos.sh --mode update
 ```
