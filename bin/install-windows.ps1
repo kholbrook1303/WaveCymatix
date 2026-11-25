@@ -349,7 +349,8 @@ Parameters:
     -OutputDir <path>        Installation and application-data directory.
                              Default: $env:ProgramData\WaveCymatix
 
-    -Ref <ref|latest>        WaveCymatix source ref (default: latest stable release).
+    -Ref <ref|latest>        Source ref (default: latest stable release, or
+                             latest published prerelease if no stable release exists).
     -ProjectMRef <ref>       Select a projectM tag/branch/commit. When omitted,
                              updates retain the installed projectM source ref.
     -AssetsRef <ref>         Visual-assets ref (default: main).

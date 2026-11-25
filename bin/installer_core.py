@@ -16,6 +16,7 @@ import subprocess
 import sys
 import tempfile
 import tomllib
+import urllib.error
 import urllib.request
 from collections.abc import Callable
 from datetime import datetime, timezone
@@ -109,21 +110,71 @@ def resolve_latest_release(repository: str) -> str:
     repository_path = repository.removeprefix("https://github.com/").removesuffix(".git").strip("/")
     if repository_path.count("/") != 1:
         fail(f"Expected a GitHub owner/repository URL, got: {repository}")
-    request = urllib.request.Request(
-        f"https://api.github.com/repos/{repository_path}/releases/latest",
-        headers={"Accept": "application/vnd.github+json", "User-Agent": "WaveCymatix-installer"},
-    )
+    releases_url = f"https://api.github.com/repos/{repository_path}/releases"
+    headers = {"Accept": "application/vnd.github+json", "User-Agent": "WaveCymatix-installer"}
+    request = urllib.request.Request(f"{releases_url}/latest", headers=headers)
     try:
         with urllib.request.urlopen(request, timeout=20) as response:
             release = json.load(response)
+    except urllib.error.HTTPError as error:
+        if error.code != 404:
+            fail(f"Could not resolve the latest stable WaveCymatix release: {error}")
     except (OSError, ValueError) as error:
         fail(f"Could not resolve the latest stable WaveCymatix release: {error}")
-    if not isinstance(release, dict):
-        fail("GitHub latest-release response was not a JSON object.")
-    tag = release.get("tag_name")
-    if not isinstance(tag, str) or not tag:
-        fail("GitHub latest-release response did not contain a tag_name.")
-    return tag
+    else:
+        if not isinstance(release, dict):
+            fail("GitHub latest-release response was not a JSON object.")
+        tag = release.get("tag_name")
+        if not isinstance(tag, str) or not tag:
+            fail("GitHub latest-release response did not contain a tag_name.")
+        return tag
+
+    newest_tag = ""
+    newest_published: datetime | None = None
+    page = 1
+    while True:
+        request = urllib.request.Request(
+            f"{releases_url}?per_page=100&page={page}", headers=headers
+        )
+        try:
+            with urllib.request.urlopen(request, timeout=20) as response:
+                releases = json.load(response)
+        except (OSError, ValueError) as error:
+            fail(f"Could not resolve a prerelease for {repository_path}: {error}")
+        if not isinstance(releases, list):
+            fail("GitHub releases response was not a JSON array.")
+        for item in releases:
+            if (
+                not isinstance(item, dict)
+                or not isinstance(item.get("draft"), bool)
+                or not isinstance(item.get("prerelease"), bool)
+            ):
+                fail("GitHub releases response contained an invalid release.")
+            if item["draft"] or not item["prerelease"]:
+                continue
+            tag = item.get("tag_name")
+            published = item.get("published_at")
+            if not isinstance(tag, str) or not tag or not isinstance(published, str):
+                fail("GitHub prerelease response did not contain a tag and publication time.")
+            try:
+                published_at = datetime.fromisoformat(published.replace("Z", "+00:00"))
+            except ValueError:
+                fail(f"GitHub prerelease has an invalid publication time: {published}")
+            if published_at.tzinfo is None:
+                fail(f"GitHub prerelease publication time has no timezone: {published}")
+            if newest_published is None or published_at > newest_published:
+                newest_tag = tag
+                newest_published = published_at
+        if len(releases) < 100:
+            break
+        page += 1
+    if not newest_tag:
+        fail(f"No published stable or prerelease release was found for {repository_path}.")
+    print(
+        f"WARNING: No stable release was found for {repository_path}; using prerelease {newest_tag}.",
+        file=sys.stderr,
+    )
+    return newest_tag
 
 
 def checkout(repository: str, ref: str, cache: Path) -> tuple[Path, str, str]:

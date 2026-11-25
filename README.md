@@ -70,9 +70,11 @@ For manual and automated installation instructions (Raspberry Pi, other Linux, W
   unchanged for compatible releases. Increase them when source changes require
   a newer installer, and test upgrades from older installers.
 - Test fresh installs and updates from a clean release checkout on supported
-  platforms. The default application ref is the latest stable GitHub Release;
-  prereleases require an explicit ref. Visual assets default to their separate
-  repository's `main` branch.
+  platforms. The default application ref is the latest stable GitHub Release.
+  Until a stable release exists, it falls back to the most recently published
+  prerelease with a warning. Once a stable release exists, it is preferred even
+  if a newer prerelease is available; use an explicit ref to select that
+  prerelease. Visual assets default to their separate repository's `main` branch.
 
 ## Running from a checkout
 

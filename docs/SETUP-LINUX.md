@@ -23,14 +23,16 @@ sudo apt upgrade -y
 ### Install WaveCymatix
 
 Download and extract the source archive from the
-[latest GitHub release](https://github.com/kholbrook1303/WaveCymatix/releases/latest),
+[GitHub releases page](https://github.com/kholbrook1303/WaveCymatix/releases),
 then open a terminal in the extracted directory. The installer needs the
 complete archive, including `bin/installer.env` and `bin/installer_core.py`;
 do not pipe the script directly into a shell.
 
-By default, the installer selects the latest stable GitHub release. For an
-update, download the latest release archive again so that you also have the
-latest installer. If no stable release exists yet, use a complete checkout
+By default, the installer selects the latest stable GitHub release. If none
+exists, it warns and selects the most recently published prerelease instead.
+Once a stable release exists, use `--ref <tag>` to select a prerelease.
+For an update, download the appropriate release archive again so that you also
+have its installer. If no release has been published, use a complete checkout
 with `--local-install` instead.
 
 The installer operation is selected with `--mode` (`install`, `update`, or
@@ -64,7 +66,7 @@ sudo bash bin/install-linux.sh --mode install --profile minimal
 # Install with selected audio plugins
 sudo bash bin/install-linux.sh --mode install --autostart --plugins bluetooth,shairport-sync,spotifyd,plexamp
 
-# Update to the latest stable release, preserving configuration and user data
+# Update to the default release, preserving configuration and user data
 sudo bash bin/install-linux.sh --mode update
 
 # Install a specific release using its matching installer archive
