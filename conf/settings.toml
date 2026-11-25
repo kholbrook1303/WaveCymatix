@@ -1,0 +1,409 @@
+[general]
+# log_level is the logging level
+# CRITICAL=50
+# ERROR=40
+# WARNING=30
+# INFO=20
+# DEBUG=10
+# NOTSET=0
+log_level = 20
+
+# Touch rotation in degrees clockwise to map physical panel rotation
+# Controls which region of the screen is used for previous/next preset navigation
+# Allowed values: 0, 90, 180, 270
+touch_rotation_degrees = 0
+
+# playlistDbPath is the sqlite file used to persist playlists/favorites
+playlistDbPath = "/opt/WaveCymatix/data/media_library.db"
+
+# pcm_cache_seconds defines the duration in seconds for which the PCM audio data (Currently only audio lookups use this for NowPlaying).
+pcm_cache_seconds = 10
+
+[ui]
+# UI colors use standard RGB channel values from 0 to 255 (for example, red is [255, 0, 0]).
+window_selected_color = [41, 74, 122]
+window_deselected_color = [20, 20, 20]
+
+# Border colors for titled windows and floating controls are independent.
+window_border_color = [0, 0, 0]
+overlay_border_color = [128, 128, 128]
+
+# Window background transparency from 0.0 (transparent) to 1.0 (opaque).
+window_background_alpha = 0.75
+
+# ui_scale_factor scales the entire UI relative to its current resolution-based size.
+# Use a value greater than 0 and at most 1.0 (for example, 0.8 for 80%).
+ui_scale_factor = 1.0
+
+# visuals_enabled is a boolean parameter to enable/disable the visual elements which include the video projectm, background, and slideshow
+# default_visual_mode determines which visual mode to use on startup 
+# - projectm: use the ProjectM visualizer
+# - slideshow: use the slideshow visualizer
+# - video_background: use the video background visualizer
+# - none: disable all visualizers
+visuals_enabled = true
+default_visual_mode = "projectm"
+
+# media_ui_enabled is a boolean parameter to enable/disable the media controls overlay which includes play/p
+# media_ui_persistent is a boolean parameter to determine whether the media controls should persist on the screen or hide after a few seconds of inactivity
+# media_ui_scale_factor determines the scale of the media controls overlay relative to the base UI scale.
+media_ui_enabled = true
+media_ui_persistent = false
+media_ui_scale_factor = 1.0
+
+# now_playing_enabled is a boolean parameter to enable/disable the now playing overlay which includes track information and album art
+# now_playing_persistent is a boolean parameter to determine whether the now playing overlay should persist on the screen or hide after a few seconds of inactivity
+# now_playing_ui_scale_factor determines the scale of the now playing overlay relative to the base UI scale.
+now_playing_enabled = true
+now_playing_persistent = false
+now_playing_ui_scale_factor = 1.0
+
+# toolbar_ui_enabled is a boolean parameter to enable/disable the toolbar overlay which includes preset navigation and other controls
+# toolbar_ui_scale_factor determines the scale of the toolbar overlay relative to the base UI scale.
+toolbar_ui_enabled = true
+toolbar_ui_scale_factor = 1.0
+
+# This enables/disables individual UI elements as needed by the user.
+# diagnostics_ui_enabled is a boolean parameter to enable/disable the diagnostics overlay which includes FPS, audio levels, and other performance metrics
+# diagnostics_ui_scale_factor determines the scale of the diagnostics overlay relative to the base UI scale.
+diagnostics_ui_enabled = true
+diagnostics_ui_scale_factor = 1.0
+
+[monitors]
+# Monitor Modules
+# audio is a boolean parameter to enable/disable handling of audio devices
+# display is a boolean parameter to enable/disable handling of the display resolution (limited to desktop OS)
+audio = true
+display = false
+
+[audio_ctrl]
+# audio_mode instructs the system to use either 
+# - manual: the user manually specifies audio devices and configurations
+# - automatic: the system automatically selects audio devices and configurations
+audio_mode = "automatic"
+
+# io_device_mode determines the type of source for an input/output card 
+# - mic: use the microphone input
+# - aux: use the auxiliary input
+# *Blank defaults to the device description
+io_device_mode = "aux"
+
+# mic_auto_suppress is a boolean parameter to enable/disable automatically muting the mic
+# loopback whenever real audio (aux input or a digital plugin like Bluetooth/Plexamp) is
+# audible on the actual output, so the mic doesn't have to be unplugged to switch sources.
+mic_auto_suppress = true
+
+# mic_suppress_threshold is the peak amplitude (0.00 - 1.00) above which output is considered
+# audible. *Must be a float
+mic_suppress_threshold = 0.02
+
+# mic_suppress_release_seconds is how long output must stay below the threshold before the
+# mic is unmuted again, to avoid flapping between tracks. *Must be a float
+mic_suppress_release_seconds = 1.5
+
+# mic_suppress_poll_interval is how often (in seconds) the output peak is sampled. *Must be a float
+mic_suppress_poll_interval = 0.25
+
+[automatic]
+# sink_device_type defines whether or not to use:
+# - internal: use the internal sound card for sound output
+# - external: use an external sound card for sound output
+# Leave blank for either.
+sink_device_type = ""
+
+# sink_device_volume is the desired output from .00 - 1.0 *Must be a float
+sink_device_volume = 1.0
+
+# source_device_type defines whether or not to use:
+# - mic: use the microphone input
+# - aux: use the auxiliary input
+# Leave blank to use either
+source_device_type = ""
+
+# source_device_volume is the desired output from .00 - 1.0 *Must be a float
+# Note: aux input device is handled through looback-modules whereas mic is not to avoid echos
+source_device_volume = 1.0
+
+# card_profile_types defines the type of card profile in the order listed
+# - input: input-only card profile
+# - input-output: input and output card profile
+# - output: output-only card profile
+card_profile_types = ["input-output", "input", "output"]
+
+# card_profile_modes defines the type of formats accepted
+# use pulsectl to query and set the available card profile modes
+card_profile_modes = ["analog-stereo", "analog-mono", "stereo-fallback", "mono-fallback", "hdmi-stereo"]
+
+[manual]
+# For more granular device control you can manually specify devices.
+# Please refer to the audio configurations where devices can be defined
+
+# combined_sink_volume is the desired output from .00 - 1.0 *Must be a float
+combined_sink_volume = 1.0
+
+[plugins]
+# Universal Plugins
+# plexamp is a boolean parameter to enable/disable PlexAmp device control
+plexamp = false
+
+# Windows Plugins
+# windows_media is a boolean parameter to enable/disable Windows Media Transport control
+windows_media = false
+
+# Linux plugins
+# airplay is a boolean parameter to enable/disable AirPlay device control
+# bluetooth is a boolean parameter to enable/disable bluetooth device control
+# spotify is a boolean parameter to enable/disable Spotify Connect control
+# vlc is a boolean parameter to enable/disable VLC media player control
+airplay = false
+bluetooth = false
+spotify = false
+vlc = true
+
+[vlc]
+# VLC listener is only supported on Linux systems (uses pyudev for USB detection)
+# listener_enabled determines whether or not to enable the audio listener plugin
+# listener_source determines the source for the audio listener (supports either local or usb)
+# listener_path determines the file path for the audio listener to monitor for new audio files (only applicable for local listener source)
+# listener_shuffle determines whether or not to shuffle the playlist when new audio files are detected (only applicable for local/usb listener source)
+listener_enabled = false
+listener_source = "local"
+listener_path = "/home/kiley/Music"
+listener_shuffle = true
+
+[plexamp]
+plex_url = "http://arc13.homeip.net:32400"
+plex_token = "ZwvHscGXzQB5ZXGwQzix"
+plex_client = "DESKTOP CP9DNOU"
+
+[audio_lookup]
+# enabled is a boolean parameter to enable/disable audio track lookup functionality.  
+# This will leverage ShazamIO for audio recognition and metadata retrieval as long as there
+# is no active audio plugin.
+enabled = true
+
+# audio_sample_rate is the sample rate for audio processing in Hz. Common values are 44100 or 48000.
+# audio_channels is the number of audio channels for processing.
+# cache_seconds is the number of seconds to cache audio data.
+# min_audio_seconds is the minimum duration of audio to consider for lookup.
+# min_audio_rms is the minimum RMS level (0.0-1.0 of full scale) to treat audio as real signal vs. background noise.
+audio_sample_rate = 44100
+audio_channels = 2
+cache_seconds = 8
+min_audio_seconds = 5
+min_audio_rms = 0.004
+
+# continuous_lookup is a boolean parameter to enable/disable continuous audio lookup.
+# continuous_lookup_interval is the interval in seconds between each continuous lookup when enabled.
+continuous_lookup = false
+continuous_lookup_interval = 10
+
+[visuals]
+# Visual Elements
+projectm_enabled = true
+slideshow_enabled = true
+video_background_enabled = true
+
+[slideshow]
+# slideshow.directory is the file path to the directory containing the images for the slideshow
+# slideshow.randomize is a boolean parameter to enable/disable randomization of the slideshow order
+# slideshow.slide_duration is the duration in seconds for each slide to be displayed before transitioning to the next one
+# slideshow.fade_duration is the duration in seconds for the fade transition between slides
+"slideshow.directory" = "/home/kiley/Pictures"
+"slideshow.randomize" = true
+"slideshow.slide_duration" = 8.0
+"slideshow.fade_duration" = 2.0
+
+# slideshow.defaultPlaylist is the preferred startup playlist when favorites is empty
+"slideshow.defaultPlaylist" = "favorites"
+
+[video_background]
+# video_background.directory is the file path to the directory containing the videos for the background
+# video_background.randomize is a boolean parameter to enable/disable randomization of the video background order
+# video_background.muted is a boolean parameter to enable/disable muting of the video background audio
+"video_background.directory" = "/home/kiley/Videos"
+"video_background.randomize" = true
+"video_background.muted" = true
+
+# video_background.defaultPlaylist is the preferred startup playlist when favorites is empty
+"video_background.defaultPlaylist" = "favorites"
+
+[projectm]
+# If set to true, the application will start in fullscreen mode
+"window.fullscreen" = true
+
+# If set to true, the application windows will have no window decorations if the OS supports it.
+# This will possibly make the window immovable.
+"window.borderless" = false
+
+# Set the monitor to initially display the window on.
+# 0 will use system defaults for placement, 1 and above select a specific monitor.
+# If the number is too large, that last available monitor is used.
+"window.monitor" = 0
+
+# Two fullscreen modes are supported:
+# - windowed: Uses a borderless window, filling the current monitor.
+#             Does not change the current resolution.
+# - exclusive: Sets the resolution to window.fullscreen.width/height and runs in exclusive mode,
+#              like a game.
+"window.fullscreen.exclusiveMode" = true
+
+# Fullsceen resolution settings.  For 'desktop' OS this will enforce the display resolution using Wayland or X
+# For 'lite' OS this will leverage fullscreen exclusive mode to enforce the resolution.
+# To ensure a smooth experience, ensure you have your resolution set accordingly:
+# - Raspberry Pi 4 (HDMI):		width: 720 height:480
+# - Raspberry Pi 4 (Composite): width: 720 height:576
+# - Raspberry Pi 5 (HDMI):		width: 1280 height:720
+# - Raspberry Pi 5 (Composite): width: 720 height:576
+"window.fullscreen.width" = 1280
+"window.fullscreen.height" = 720
+
+# Window size if not in fullscreen
+"window.width" = 800
+"window.height" = 600
+
+# If overridePosition is true, the window will be placed at these coordinates.
+# Note this will include any window decoration, to the actual window contents might be offset to the bottom-right.
+"window.left" = 0
+"window.top" = 60
+
+# Wait for vertical sync interval before displaying the next frame.
+# This will limit max FPS to the vertical sync frequency but prevents tearing.
+"window.waitForVerticalSync" = true
+
+# Tries to use adaptive vertical sync if waitForVerticalSync is enabled.
+# When using a monitor capable of adaptive sync, setting projectM.fps to 0 gives the best results.
+"window.adaptiveVerticalSync" = true
+
+# If true, displays the current preset name (and locked state) in the window title.
+# If false, the window title is fixed to "projectM".
+"window.displayPresetNameInTitle" = true
+
+### projectM settings
+
+# Default path where projectM will search for presets and textures. The directory will be searched recursively.
+# To add additional preset paths, add them as shown in the examples below.
+"projectM.presetPath" = "/opt/WaveCymatix/presets"
+#projectM.presetPath.1 = /yet/another/preset/path
+#projectM.presetPath.2 = /yet/another/preset/path
+
+# projectM.defaultPlaylist is the preferred startup playlist when favorites is empty
+"projectM.defaultPlaylist" = "favorites"
+
+# Default setting/path where projectM will backup presets that were deleted
+"projectM.presetDeleteBackupEnabled" = true
+"projectM.presetDeleteBackupPath" = "/opt/WaveCymatix/preset_backup"
+
+# Default path where projectM will search for additional textures. The directory will be searched recursively.
+# To add additional texture paths, add them as shown in the examples below.
+"projectM.texturePath" = "/opt/WaveCymatix/textures"
+"projectM.texturePath.1" = "/opt/WaveCymatix/sprites"
+#projectM.texturePath.2 = /yet/another/texture/path
+
+# Default sprite index to use with logo hotkeys (single or comma separated list of img ids from the sprites.ini).
+# If nothing is specified the logo hotkeys will simply not load/unload sprite logos.
+"projectM.spriteLogo" = ""
+
+# If true, displays the built-in projectM logo preset on startup.
+"projectM.enableSplash" = false
+
+# Preset display duration in seconds. If the time has passed, a soft cut is done to the next preset.
+"projectM.displayDuration" = 60
+
+# If enabled, presets are selected randomly from the current playlist. Otherwise, they are played in order.
+"projectM.shuffleEnabled" = true
+
+# If enabled, the current/initial preset can only be changed manually.
+"projectM.presetLocked" = false
+
+# Per-pixel mesh size. This is the grid in which "per-pixel" code is executed, once per cell.
+# Do not set this value too high, as it severely impacts performance. On low-end hardware, set this to a small
+# value, e.g. 64x32. This does *NOT* affect the actual render/shader resolution!
+"projectM.meshX" = 64
+"projectM.meshY" = 32
+
+# Transition time in seconds for soft cuts
+"projectM.transitionDuration" = 0
+
+# ProjectM's sensitivity to music, to better match the music's rhythm
+"projectM.beatSensitivity" = 1.0
+
+# Hard cuts are immediate presets transitions on an intensive beat.
+# If enabled, after "hardCutDuration" seconds have passed and an intensive beat is detected,
+# a hard cut is performed. "hardCutDuration" should be set lower than "displayDuration" to have an effect.
+# Adjust hardCutSensitivity to better match the music's rhythm
+"projectM.hardCutsEnabled" = true
+"projectM.hardCutDuration" = 30
+"projectM.hardCutSensitivity" = 1.0
+
+# Controls aspect ration correction in presets. Not all presets use aspect ratio, so this setting  only has an effect
+# on presets using the aspect ration actively.
+"projectM.aspectCorrectionEnabled" = true
+
+# Target FPS, usually 60.
+"projectM.fps" = 60
+
+[performance]
+# This section controls runtime stability checks and auto-skip behavior for visuals.
+# Settings here apply to all visual modes unless a mode-specific override is provided.
+#
+# Beginner quick start:
+# 1) Leave everything at defaults.
+# 2) If you only want visibility with no auto-actions, keep both enforcement toggles False.
+# 3) Enable one enforcement toggle at a time when tuning.
+#
+# Advanced users can tune detector thresholds and decay values below.
+enabled = true
+
+# perf_policy_action:
+# - advance_visual: automatically advance to the next visual when a performance policy is triggered.
+# - delete_visual: automatically delete the current visual when a performance policy is triggered.
+perf_policy_action = "advance_visual"
+
+# fps_policy_enabled:
+# - True: allow auto-advance when measured FPS is below threshold.
+# - False: still measure/report FPS status, but do not auto-advance from FPS policy.
+fps_policy_enabled = false
+
+# FPS policy settings
+# fps_target: desired minimum runtime FPS for a visual mode.
+# tolerance: threshold multiplier. Example 30 * 0.8 = 24 FPS threshold.
+# fps_action_cooldown: minimum seconds between FPS-triggered actions.
+fps_target = 30
+tolerance = 0.8
+fps_action_cooldown = 2.5
+
+# perf_detection_enabled:
+# - True: allow auto-advance when frame-time instability is detected.
+# - False: still measure/report detector status, but do not auto-advance from detector.
+perf_detection_enabled = false
+
+# Detector settle windows after visual transitions
+# After a mode switch/preset change, detector scoring pauses briefly to avoid false triggers.
+settle_time_hard = 1.5
+settle_time_soft = 2.5
+
+# Detector tuning
+# baseline_window: frame sample count used for moving baseline.
+# min_samples: warmup frames required before detector can trigger.
+# deviation_threshold: frame-time spike multiplier relative to baseline.
+# long_frame_threshold: absolute frame-time threshold in seconds.
+# swap_stall_threshold: swap/present stall threshold in seconds.
+# swap_weight: weight of swap stall contribution to long-frame accumulation.
+# trigger_deviation_time: deviation accumulator trigger threshold.
+# trigger_long_frame_time: long-frame accumulator trigger threshold.
+# trigger_cooldown: minimum seconds between detector-triggered actions.
+# decay_deviation / decay_long_frame: accumulator memory (higher = longer memory).
+# baseline_alpha: baseline responsiveness (higher = faster adaptation).
+baseline_window = 180
+min_samples = 45
+deviation_threshold = 2.2
+long_frame_threshold = 0.085
+swap_stall_threshold = 0.018
+swap_weight = 0.85
+trigger_deviation_time = 0.12
+trigger_long_frame_time = 0.14
+trigger_cooldown = 4.0
+decay_deviation = 0.93
+decay_long_frame = 0.90
+baseline_alpha = 0.04

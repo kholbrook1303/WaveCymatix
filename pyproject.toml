@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "wavecymatix"
+description = "Cross-platform audio visualization application"
+requires-python = ">=3.12"
+dynamic = ["dependencies", "version"]
+
+[project.scripts]
+wavecymatix = "wavecymatix.app:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+wavecymatix = ["assets/*", "VERSION"]
+
+[tool.setuptools.dynamic]
+dependencies = {file = ["requirements.txt"]}
+version = {file = ["src/wavecymatix/VERSION"]}

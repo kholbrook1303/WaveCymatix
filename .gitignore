@@ -1,0 +1,18 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/.vs/RPI5-Bookworm-ProjectM-Audio-Receiver
+/env
+/presets
+/presets_custom
+/preset_backup
+/textures
+/textures_custom
+__pycache__/
+*.py[cod]
+/.venv/
+/build/
+/dist/
+/tools/
+*.egg-info/
