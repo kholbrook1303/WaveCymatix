@@ -179,7 +179,17 @@ def resolve_latest_release(repository: str) -> str:
 
 def checkout(repository: str, ref: str, cache: Path) -> tuple[Path, str, str]:
     cache.parent.mkdir(parents=True, exist_ok=True)
-    if not (cache / ".git").is_dir():
+    git_dir = cache / ".git"
+    if git_dir.is_dir() and not git_dir.is_symlink() and not any(git_dir.iterdir()):
+        if any(item != git_dir for item in cache.iterdir()):
+            fail(
+                f"Incomplete Git cache at {cache} contains other files; "
+                "move or remove it manually before retrying."
+            )
+        print(f"WARNING: Recreating incomplete Git cache at {cache}.", file=sys.stderr)
+        git_dir.rmdir()
+        cache.rmdir()
+    if not git_dir.is_dir():
         if cache.exists():
             shutil.rmtree(cache)
         run_git(["clone", "--filter=blob:none", "--no-checkout", repository, str(cache)])

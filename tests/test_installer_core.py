@@ -5,6 +5,7 @@ import json
 import os
 import re
 import stat
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -1807,6 +1808,7 @@ class InstallerCoreTests(unittest.TestCase):
         values = dict(line.split("=", 1) for line in config.splitlines() if line and not line.startswith("#"))
         cache = self.root / "cache"
         (cache / ".git").mkdir(parents=True)
+        (cache / ".git" / "HEAD").write_text("ref: refs/heads/main\n", encoding="utf-8")
         repository = "https://github.com/owner/project.git"
         with (
             mock.patch.object(installer_core, "resolve_latest_release", return_value="v1.2.3") as latest,
@@ -1823,6 +1825,43 @@ class InstallerCoreTests(unittest.TestCase):
             installer_core.checkout(repository, "main", cache)
             latest.assert_not_called()
             git.assert_any_call(["fetch", "--force", "--prune", "origin", "main"], cwd=cache)
+
+    def test_checkout_recovers_empty_git_directory_from_interrupted_clone(self):
+        repository = self.root / "repository"
+        repository.mkdir()
+        subprocess.run(["git", "init", "-b", "main", str(repository)], check=True, capture_output=True)
+        (repository / "source.txt").write_text("projectm", encoding="utf-8")
+        subprocess.run(["git", "-C", str(repository), "add", "source.txt"], check=True, capture_output=True)
+        subprocess.run(
+            ["git", "-C", str(repository), "-c", "user.name=Installer Test",
+             "-c", "user.email=installer@example.invalid", "commit", "-m", "test"],
+            check=True, capture_output=True,
+        )
+        cache = self.root / "cache"
+        (cache / ".git").mkdir(parents=True)
+
+        with redirect_stderr(io.StringIO()) as warnings:
+            path, commit, _ = installer_core.checkout(str(repository), "main", cache)
+
+        self.assertEqual(path, cache)
+        self.assertTrue(commit)
+        self.assertEqual((cache / "source.txt").read_text(encoding="utf-8"), "projectm")
+        self.assertIn("incomplete", warnings.getvalue().lower())
+        with redirect_stderr(io.StringIO()) as warnings:
+            _, reused_commit, _ = installer_core.checkout(str(repository), "main", cache)
+        self.assertEqual(reused_commit, commit)
+        self.assertEqual(warnings.getvalue(), "")
+
+    def test_checkout_preserves_files_in_cache_with_empty_git_directory(self):
+        cache = self.root / "cache"
+        (cache / ".git").mkdir(parents=True)
+        (cache / "personal.txt").write_text("keep", encoding="utf-8")
+
+        with self.assertRaisesRegex(RuntimeError, "Incomplete.*cache"):
+            installer_core.checkout("unused", "main", cache)
+
+        self.assertEqual((cache / "personal.txt").read_text(encoding="utf-8"), "keep")
+        self.assertTrue((cache / ".git").is_dir())
 
 
 if __name__ == "__main__":
