@@ -60,36 +60,6 @@ WaveCymatix also offers additional visual backgrounds.  You can switch between p
 # ⚙️ Installing instructions
 For manual and automated installation instructions (Raspberry Pi, other Linux, Windows, and macOS) see [SETUP.md](docs/SETUP.md).
 
-## Preparing a release
-
-- Set `src/wavecymatix/VERSION` to the application version, for example `0.1.0`.
-  Tag the tested release commit `v0.1.0` and publish a GitHub Release for that tag.
-  Keep the version and tag aligned; this is not enforced automatically.
-- Root `VERSION` specifies the minimum `INSTALLER_API` required by the source;
-  `bin/installer.env` specifies the API supported by that installer. Leave both
-  unchanged for compatible releases. Increase them when source changes require
-  a newer installer, and test upgrades from older installers.
-- Test fresh installs and updates from a clean release checkout on supported
-  platforms. The default application ref is the latest stable GitHub Release.
-  Until a stable release exists, it falls back to the most recently published
-  prerelease with a warning. Once a stable release exists, it is preferred even
-  if a newer prerelease is available; use an explicit ref to select that
-  prerelease. Visual assets default to their separate repository's `main` branch.
-
-## Running from a checkout
-
-The application is installed as the `wavecymatix` Python package. For development, create a virtual environment and install the project in editable mode:
-
-```powershell
-python -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -e .
-.\.venv\Scripts\wavecymatix.exe
-```
-
-On Linux or macOS, use `./.venv/bin/python -m pip install -e .` followed by `./.venv/bin/wavecymatix`.
-
----
-
 # 🖦 Input Event Handling Guide
 
 This document describes how keyboard, controller, mouse, touch, and window input events are handled in the application.
