@@ -6,6 +6,13 @@ WaveCymatix supports **Linux** (Raspberry Pi OS is the primary/reference platfor
 - **[Windows Installation](SETUP-WINDOWS.md)**
 - **[macOS Installation](SETUP-MACOS.md)**
 
+When upgrading to a release that stores its installer compatibility marker in
+`bin/VERSION`, download and run the installer from that release. Older
+installers expect the marker at the repository root and cannot install it.
+The new installer also accepts the root marker in older releases.
+This change raises the installer API level to 2; it does not change the
+application version.
+
 Once installed, see [⚙️ Configuration](#%EF%B8%8F-configuration) below — it applies to all OSes, with OS-specific notes called out per section.
 
 ---
