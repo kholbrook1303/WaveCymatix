@@ -413,6 +413,66 @@ class InstallerCoreTests(unittest.TestCase):
                 supported_api=1,
             )
 
+    def test_new_installer_marker_is_validated_and_installed_without_root_marker(self):
+        (self.source / "VERSION").rename(self.source / "bin" / "VERSION")
+        resolved = installer_core.resolve_source(
+            None, self.source, "local", self.root / "cache", self.output, supported_api=1
+        )
+        self.assertEqual(resolved["path"], str(self.source.resolve()))
+        self.output.mkdir()
+        (self.output / "VERSION").write_text("INSTALLER_API=1\n", encoding="utf-8")
+        stage = installer_core.stage(self.source, self.output)
+        with mock.patch.object(installer_core, "validate"):
+            installer_core.commit_application(
+                stage, self.output, sys.executable, "v1", "commit", "main", "assets"
+            )
+        self.assertEqual((self.output / "bin" / "VERSION").read_text(encoding="utf-8"), "INSTALLER_API=1\n")
+        self.assertFalse((self.output / "VERSION").exists())
+        self.assertFalse(stage.exists())
+
+    def test_new_installer_marker_takes_priority_over_legacy_marker(self):
+        (self.source / "bin" / "VERSION").write_text("INSTALLER_API=2\n", encoding="utf-8")
+        with self.assertRaisesRegex(RuntimeError, "requires installer API 2"):
+            installer_core.resolve_source(
+                None, self.source, "local", self.root / "cache", self.output, supported_api=1
+            )
+
+    def test_current_source_requires_new_installer_api(self):
+        source = Path(__file__).parents[1]
+        with self.assertRaisesRegex(RuntimeError, "requires installer API 2"):
+            installer_core.resolve_source(
+                None, source, "local", self.root / "cache", self.output, supported_api=1
+            )
+        values = dict(
+            line.split("=", 1)
+            for line in (source / "bin" / "installer.env").read_text(encoding="utf-8").splitlines()
+            if line and not line.startswith("#")
+        )
+        resolved = installer_core.resolve_source(
+            None, source, "local", self.root / "cache", self.output,
+            supported_api=int(values["INSTALLER_API"]),
+        )
+        self.assertEqual(resolved["path"], str(source.resolve()))
+
+    def test_legacy_marker_remains_installable_with_new_installer(self):
+        installer_core.resolve_source(
+            None, self.source, "local", self.root / "cache", self.output, supported_api=1
+        )
+        installer_core.stage(self.source, self.output)
+        installer_core.commit(self.output)
+        self.assertEqual((self.output / "VERSION").read_text(encoding="utf-8"), "INSTALLER_API=1\n")
+
+    def test_marker_migration_restores_root_marker_on_rollback(self):
+        (self.source / "VERSION").rename(self.source / "bin" / "VERSION")
+        self.output.mkdir()
+        (self.output / "VERSION").write_text("INSTALLER_API=1\n", encoding="utf-8")
+        installer_core.stage(self.source, self.output)
+        installer_core.commit(self.output)
+        self.assertFalse((self.output / "VERSION").exists())
+
+        installer_core.rollback_application_changes(self.output)
+        self.assertEqual((self.output / "VERSION").read_text(encoding="utf-8"), "INSTALLER_API=1\n")
+
     def test_application_version_is_read_from_package_version_file(self):
         version_file = self.source / "src" / "wavecymatix" / "VERSION"
         self.assertEqual(installer_core.read_app_version(version_file), "1.2.3")
@@ -433,7 +493,7 @@ class InstallerCoreTests(unittest.TestCase):
         ):
             with self.assertRaisesRegex(
                 RuntimeError,
-                r"missing required paths: VERSION, pyproject\.toml, src/wavecymatix/app\.py.*-LocalInstall or -Source",
+                r"missing required paths: bin/VERSION or VERSION, pyproject\.toml, src/wavecymatix/app\.py.*-LocalInstall or -Source",
             ):
                 installer_core.resolve_source(
                     "https://example.invalid/WaveCymatix.git",
@@ -476,6 +536,7 @@ class InstallerCoreTests(unittest.TestCase):
         )
 
     def test_prepare_application_owns_shared_staging_content_and_python_setup(self):
+        (self.source / "VERSION").rename(self.source / "bin" / "VERSION")
         (self.output / "conf").mkdir(parents=True)
         (self.output / "conf" / "settings.toml").write_text(
             '[general]\nvalue = "user"\n', encoding="utf-8"

@@ -33,7 +33,6 @@ APP_ITEMS = (
     "pyproject.toml",
     "requirements.txt",
     "src",
-    "VERSION",
 )
 INSTALL_ITEMS = (
     "bin",
@@ -43,7 +42,7 @@ INSTALL_ITEMS = (
     "requirements.txt",
     "VERSION",
 )
-LEGACY_APP_ITEMS = ("assets", "core", "lib", "WaveCymatix.py")
+LEGACY_APP_ITEMS = ("assets", "core", "lib", "WaveCymatix.py", "VERSION")
 CONTENT_ITEMS = ("presets", "textures", "sprites")
 INSTALL_PHASES = (
     "Phase 1: preflight",
@@ -90,9 +89,16 @@ def validate_source(source: Path, output: Path) -> None:
     fail(f"Source directory must not be the same as or inside the install directory: {source}")
 
 
+def installer_version_path(source: Path) -> Path:
+    current = source / "bin" / "VERSION"
+    if current.exists() or current.is_symlink():
+        return current
+    return source / "VERSION"
+
+
 def validate_source_contents(source: Path) -> None:
     required_paths = {
-        "VERSION": (source / "VERSION").is_file(),
+        "bin/VERSION or VERSION": installer_version_path(source).is_file(),
         "pyproject.toml": (source / "pyproject.toml").is_file(),
         "src/wavecymatix/app.py": (source / "src" / "wavecymatix" / "app.py").is_file(),
         "src/wavecymatix/core": (source / "src" / "wavecymatix" / "core").is_dir(),
@@ -343,6 +349,8 @@ def stage(source: Path, output: Path) -> Path:
     stage_dir.mkdir()
     for item in APP_ITEMS:
         copy_tree(source / item, stage_dir / item)
+    if installer_version_path(source) == source / "VERSION":
+        copy_tree(source / "VERSION", stage_dir / "VERSION")
 
     old_conf = output / "conf"
     if old_conf.is_dir():
@@ -527,7 +535,10 @@ def commit(
         fail(f"Staged application directory does not exist: {stage_dir}")
     staged_content = output / ".content-new"
     backup_content = output / ".content-prev"
-    app_items = [item for item in INSTALL_ITEMS] if include_app else []
+    app_items = [
+        item for item in INSTALL_ITEMS
+        if item != "VERSION" or (stage_dir / item).is_file()
+    ] if include_app else []
     content_items = (
         [item for item in CONTENT_ITEMS]
         if staged_content.exists()
@@ -561,7 +572,7 @@ def commit(
         },
         "legacy": {
             item: (output / item).exists() or (output / item).is_symlink()
-            for item in LEGACY_APP_ITEMS
+            for item in LEGACY_APP_ITEMS if item not in app_items
         } if app_items else {},
         "manifest_components": {
             name: json.loads(json.dumps(components[name]))
@@ -633,7 +644,7 @@ def prepare_application(
     if reset_config:
         shutil.rmtree(stage_dir / "conf")
         shutil.copytree(source / "conf", stage_dir / "conf", symlinks=True)
-    verify_installer_api(stage_dir / "VERSION", supported_api)
+    verify_installer_api(installer_version_path(stage_dir), supported_api)
 
     content = prepare_content(
         assets_repository,
@@ -768,7 +779,7 @@ def commit_application(
     )
     validate(stage_dir, python)
     staged_version = read_app_version(stage_dir / "src" / "wavecymatix" / "VERSION")
-    read_version(stage_dir / "VERSION")
+    read_version(installer_version_path(stage_dir))
     manifest = _read_manifest(output)
     components = manifest.get("components")
     application = components.get("application") if isinstance(components, dict) else None
@@ -787,7 +798,7 @@ def commit_application(
         == (stage_dir / "conf" / "settings.toml").read_bytes()
         and not any(
             (output / item).exists() or (output / item).is_symlink()
-            for item in LEGACY_APP_ITEMS
+            for item in LEGACY_APP_ITEMS if not (stage_dir / item).exists()
         )
     )
     if not no_op:
@@ -1084,7 +1095,7 @@ def resolve_source(
 
     if source is None:
         validate_source_contents(source_path)
-    verify_installer_api(source_path / "VERSION", supported_api)
+    verify_installer_api(installer_version_path(source_path), supported_api)
     return {
         "path": str(source_path),
         "commit": commit_hash,
